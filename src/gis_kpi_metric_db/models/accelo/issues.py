@@ -1,0 +1,45 @@
+from sqlalchemy import BigInteger, Boolean, JSON, String
+from sqlalchemy.orm import mapped_column
+from ..base import Base
+
+
+class Issue(Base):
+    __tablename__ = "issues"
+    __table_args__ = {"schema": "accelo"}
+    id = mapped_column(BigInteger, primary_key=True, autoincrement=False)
+    title = mapped_column(String, nullable=False)
+    custom_id = mapped_column(String, nullable=True)
+    description = mapped_column(String, nullable=True)
+    against = mapped_column(String, nullable=True)
+    against_type = mapped_column(String, nullable=True)
+    against_id = mapped_column(BigInteger, nullable=True)
+    type = mapped_column(JSON(none_as_null=True), nullable=True)
+    issue_type = mapped_column(JSON(none_as_null=True), nullable=True)
+    affiliation = mapped_column(JSON(none_as_null=True), nullable=True)
+    class_ = mapped_column("class", JSON(none_as_null=True), nullable=True)
+    priority = mapped_column(JSON(none_as_null=True), nullable=True)
+    issue_priority = mapped_column(JSON(none_as_null=True), nullable=True)
+    resolution = mapped_column(JSON(none_as_null=True), nullable=True)
+    resolution_detail = mapped_column(String, nullable=True)
+    status = mapped_column(JSON(none_as_null=True), nullable=True)
+    standing = mapped_column(String, nullable=True)
+    date_submitted = mapped_column(BigInteger, nullable=True)
+    submitted_by = mapped_column(JSON(none_as_null=True), nullable=True)
+    date_opened = mapped_column(BigInteger, nullable=True)
+    opened_by = mapped_column(JSON(none_as_null=True), nullable=True)
+    date_resolved = mapped_column(BigInteger, nullable=True)
+    resolved_by = mapped_column(JSON(none_as_null=True), nullable=True)
+    date_closed = mapped_column(BigInteger, nullable=True)
+    closed_by = mapped_column(JSON(none_as_null=True), nullable=True)
+    date_due = mapped_column(BigInteger, nullable=True)
+    date_last_interacted = mapped_column(BigInteger, nullable=True)
+    date_modified = mapped_column(BigInteger, nullable=True)
+    referrer_type = mapped_column(String, nullable=True)
+    referrer_id = mapped_column(BigInteger, nullable=True)
+    staff_bookmarked = mapped_column(Boolean, nullable=True)
+    billable_seconds = mapped_column(BigInteger, nullable=True)
+    company = mapped_column(JSON(none_as_null=True), nullable=True)
+    assignee = mapped_column(JSON(none_as_null=True), nullable=True)
+    contract = mapped_column(JSON(none_as_null=True), nullable=True)
+    issue_object_budget = mapped_column(JSON(none_as_null=True), nullable=True)
+    object_budget = mapped_column(JSON(none_as_null=True), nullable=True)

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "gis-kpi-metric-db"
+version = "0.1.0"
+description = "GIS KPI SQLAlchemy models, schemas, services and Alembic migrations"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["SQLAlchemy>=2,<3", "pydantic>=2,<3", "alembic>=1.17,<2"]
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3"]
+test = ["pytest>=8", "psycopg[binary]>=3"]
+docs = ["sphinx>=8,<9", "myst-parser>=4", "pydata-sphinx-theme>=0.16", "sphinx-simplepdf>=1.7"]
+dev = ["pytest>=8", "psycopg[binary]>=3", "build>=1", "twine>=6", "sphinx>=8,<9", "myst-parser>=4", "pydata-sphinx-theme>=0.16", "sphinx-simplepdf>=1.7"]
+[project.scripts]
+gis-kpi-metric-db = "gis_kpi_metric_db.cli:main"
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.setuptools.package-data]
+gis_kpi_metric_db = ["alembic.ini", "migrations/*.py", "migrations/*.mako", "migrations/versions/*.py"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --import-mode=importlib"
