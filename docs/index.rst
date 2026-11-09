@@ -1,16 +1,11 @@
-GIS KPI Metric Database
-=======================
+GIS KPI Database Deployment
+===========================
 
-Persistence library shared by the metric calculator and Airflow deployment.
-It is a Python distribution, with no Airflow provider entry point or DAGs.
+This repository installs gis-kpi-metric-data-service from the internal registry and
+runs its migrations. It is not an installable package or provider.
 
 .. toctree::
    :maxdepth: 2
 
-   guides/install
    guides/migrations
-   guides/services
-   guides/development
-   guides/releases
-   references/index
    changelog/index

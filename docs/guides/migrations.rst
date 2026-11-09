@@ -6,10 +6,10 @@ application database URL, pointing to the same database as the Airflow
 GIS_KPI_POSTGRESS_CONNECTION::
 
     export GIS_KPI_DATABASE_URL='postgresql+psycopg://user:password@host:5432/gis_kpi'
-    gis-kpi-metric-db heads
-    gis-kpi-metric-db history --verbose
-    gis-kpi-metric-db upgrade head
-    gis-kpi-metric-db current
+    gis-kpi-metric-data-service heads
+    gis-kpi-metric-data-service history --verbose
+    gis-kpi-metric-data-service upgrade head
+    gis-kpi-metric-data-service current
 
 The CLI works from any working directory. It reads packaged alembic.ini and
 migration resources; it does not read Airflow connections. PostgreSQL must
@@ -32,32 +32,25 @@ Running upgrade head again applies only pending revisions.
 
 Review SQL without applying it::
 
-    gis-kpi-metric-db upgrade head --sql > migration.sql
+    gis-kpi-metric-data-service upgrade head --sql > migration.sql
 
 That renders the path from base; for a database at 0001 use
-``gis-kpi-metric-db upgrade 0001:head --sql``.
+``gis-kpi-metric-data-service upgrade 0001:head --sql``.
 
 Adding migrations
 -----------------
 
-Use a source checkout, not an installed site-packages directory::
-
-    pip install -e '.[dev]'
-    alembic revision --autogenerate -m 'describe schema change'
-    alembic upgrade head
-
-The root alembic.ini targets src/gis_kpi_metric_db/migrations. A revision template
-is included. Update models first, inspect the generated upgrade/downgrade and
-write data backfills explicitly. Never edit a revision already deployed. Commit
-new revisions with model changes and test clean and incremental upgrades.
+Create new revisions in the separate gis-kpi-metric-data-service source repository,
+release a new package version, then update requirements.txt here. Do not
+write revisions into installed site-packages.
 
 Rollback and adoption
 ---------------------
 
 Inspect history/current and back up data before rollback::
 
-    gis-kpi-metric-db downgrade -1
-    gis-kpi-metric-db upgrade head
+    gis-kpi-metric-data-service downgrade -1
+    gis-kpi-metric-data-service upgrade head
 
 Downgrading the initial revision drops the application tables and data.
 ``stamp`` only changes revision bookkeeping; use it only after confirming that

@@ -1,0 +1,5 @@
+
+.netrc
+.netrc.*
+.git
+**/__pycache__

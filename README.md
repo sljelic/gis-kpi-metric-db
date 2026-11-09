@@ -1,28 +1,23 @@
-# GIS KPI Metric Database
+# GIS KPI database deployment
 
-Shared SQLAlchemy models, Pydantic schemas, data services and Alembic migrations. This is the sole persistence owner for the GIS KPI project; it is a normal Python library, not an Airflow provider.
+This is a database deployment/configuration repository, **not** a Python package or Airflow provider. Do not run `pip install .` or build a wheel here.
+
+The separate [gis-kpi-metric-data-service](https://github.com/sljelic/gis-kpi-metric-data-service) library owns models, schemas, services and Alembic resources. This repository installs its published version and invokes migrations:
 
 ```sh
-pip install -e '.[dev]'
+pip install -r requirements.txt
 export GIS_KPI_DATABASE_URL='postgresql+psycopg://user:password@host:5432/gis_kpi'
-gis-kpi-metric-db upgrade head
-gis-kpi-metric-db current
+python scripts/migrate.py upgrade head
+python scripts/migrate.py current
 ```
 
-Imports are `gis_kpi_metric_db.models`, `.schemas` and `.services`. Runtime code and migration resources live in `src/gis_kpi_metric_db`; PostgreSQL deployments install the `postgres` extra. No Airflow or calculator dependency is required.
+Configure the single internal Python index and read credentials as documented in [REGISTRY.md](REGISTRY.md). Database credentials stay in the deployment environment. The application database is separate from Airflow's metadata database.
 
-**Existing databases:** revision `0001` moved unchanged from the jobs repository. Keep the existing `alembic_version` state and data. Run `upgrade head`; do not recreate or stamp the database solely because the migration files moved. The CLI works from any directory using resources shipped in the wheel.
+Revision `0001` is unchanged. Existing databases retain their revision state and data; no tables need recreation. Create new revisions in the persistence library source repository, release that library, then update this deployment's requirements pin. The root Alembic configuration references installed library resources and is for deployment commands only.
 
-For new revisions, use the source checkout: update models, then run `alembic revision --autogenerate -m 'description'` and review the result. The revision template and root source configuration are included. Rollback of the initial revision drops application tables; review/back up before downgrading.
+Documentation retains the guides/reference/changelog structure. This repository's CI validates dependency installation, migration resources and documentation; it does not publish a Python package. No migration is executed against production by CI.
 
-Documentation follows the providers' structure: `docs/guides`, `docs/references`, `docs/changelog`, one `docs/conf.py`, and root `Makefile`. See [migrations](docs/guides/migrations.rst), [services](docs/guides/services.rst) and [releases](docs/guides/releases.rst).
 
-```sh
-pytest
-python -m build
-python -m twine check dist/*
-make html
-make pdf
-```
+## Unified Python registry
 
-Set `TEST_POSTGRES_URL` to an empty disposable PostgreSQL database for migration integration tests. Git flow is feature → integration → release → production; Gitea production releases require `RELEASE_TOKEN`. GitHub validates only. Database dependencies are public; this package does not need private calculator access.
+Use ordinary pip package versions through the configured single internal index. This deployment repository is not built or uploaded as a package. See [REGISTRY.md](REGISTRY.md) for endpoint configuration, read credentials and container netrc secrets.

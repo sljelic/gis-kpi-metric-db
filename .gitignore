@@ -12,3 +12,15 @@ docs/_build/
 
 node_modules/
 .airflow-ci/
+
+node_modules/
+build/
+dist/
+*.egg-info/
+__pycache__/
+.airflow-ci/
+
+.netrc
+.netrc.*
+__pycache__/
+.pytest_cache/

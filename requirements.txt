@@ -1,0 +1,1 @@
+gis-kpi-metric-data-service[postgres]==1.0.0

@@ -1,97 +1,23 @@
-name: database-validation
+name: deployment-validation
 on:
   pull_request:
   push:
-    branches: [main, develop, integration, production, 'feature/**', 'release/**', 'hotfix/**', 'codex/**']
-permissions:
-  contents: read
+    branches: [main, integration, production, 'codex/**', 'release/**']
+env:
+  PIP_INDEX_URL: ${{ vars.PIP_INDEX_URL }}
+  PYPI_READ_USERNAME: ${{ vars.PYPI_READ_USERNAME }}
+  PYPI_READ_TOKEN: ${{ secrets.PYPI_READ_TOKEN }}
 jobs:
   validate:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: python -m pip install -e '.[test]' build twine
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npm run test:release
-      - run: pytest tests/unit tests/integration/test_services.py
-      - run: python -m build && python -m twine check dist/*
-      - name: Verify installed wheel outside checkout
-        shell: bash
-        run: |
-          python -m venv --system-site-packages "$RUNNER_TEMP/provider-wheel"
-          "$RUNNER_TEMP/provider-wheel/bin/pip" install --no-deps --force-reinstall dist/*.whl
-          cp scripts/check_wheel.py "$RUNNER_TEMP/check_provider_wheel.py"
-          cd "$RUNNER_TEMP"
-          VIRTUAL_ENV="$RUNNER_TEMP/provider-wheel" "$RUNNER_TEMP/provider-wheel/bin/python" check_provider_wheel.py
-  integration:
-    container: node:22-bookworm
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/integration' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production' || startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/heads/codex/')
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: provider
-          POSTGRES_PASSWORD: provider
-          POSTGRES_DB: provider_tests
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd "pg_isready -U provider"
-          --health-interval 5s --health-timeout 5s --health-retries 20
     env:
-      TEST_POSTGRES_URL: postgresql+psycopg://provider:provider@postgres:5432/provider_tests
-    steps:
-      - uses: actions/checkout@v4
-      - run: apt-get update && apt-get install -y python3 python3-venv
-      - run: python3 -m venv /tmp/provider-test-env
-      - run: /tmp/provider-test-env/bin/python -m pip install -e '.[test]'
-      - run: /tmp/provider-test-env/bin/pytest tests/integration/test_migrations.py
-  docs:
-    runs-on: ubuntu-latest
+      AIRFLOW_HOME: ${{ github.workspace }}/.airflow-ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 fonts-dejavu-core
-      - run: python -m pip install -e '.[docs]'
-      - run: make html pdf
-  release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
-    needs: [validate, integration, docs]
-    runs-on: ubuntu-latest
-    env:
-      GITEA_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      GITEA_URL: ${{ github.server_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 fonts-dejavu-core
-      - run: python -m pip install -e '.[dev]'
-      - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Configure authenticated release remote
-        env:
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          test -n "$GITEA_TOKEN"
-          git config user.name 'GIS KPI Release Bot'
-          git config user.email 'release-bot@users.noreply.local'
-          git config credential.helper '!f() { echo username=oauth2; echo "password=$GITEA_TOKEN"; }; f'
-          git remote set-url origin "$GITEA_URL/$REPOSITORY.git"
-      - run: npm run semantic-release
+      - run: python scripts/registry.py install -r requirements-dev.txt
+      - run: python scripts/test_registry.py
+      - run: python scripts/migrate.py heads
+      - run: sphinx-build -W -b html docs docs/_build/html
