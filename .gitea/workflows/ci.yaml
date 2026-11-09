@@ -67,6 +67,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/production'
     needs: [validate, integration, docs]
     runs-on: ubuntu-latest
+    env:
       GITEA_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       GITEA_URL: ${{ github.server_url }}
     steps:
