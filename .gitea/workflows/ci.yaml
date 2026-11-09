@@ -45,6 +45,7 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U provider"
           --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
       TEST_POSTGRES_URL: postgresql+psycopg://provider:provider@postgres:5432/provider_tests
     steps:
       - uses: actions/checkout@v4
