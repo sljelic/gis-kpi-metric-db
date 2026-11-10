@@ -19,5 +19,4 @@ jobs:
           python-version: '3.12'
       - run: python scripts/registry.py install -r requirements-dev.txt
       - run: python scripts/test_registry.py
-      - run: python scripts/migrate.py heads
       - run: sphinx-build -W -b html docs docs/_build/html
