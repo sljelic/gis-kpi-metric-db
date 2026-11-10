@@ -1,0 +1,22 @@
+name: deployment-validation
+on:
+  pull_request:
+  push:
+    branches: [main, integration, production, 'codex/**', 'release/**']
+env:
+  PIP_INDEX_URL: ${{ vars.PIP_INDEX_URL }}
+  PYPI_READ_USERNAME: ${{ vars.PYPI_READ_USERNAME }}
+  PYPI_READ_TOKEN: ${{ secrets.PYPI_READ_TOKEN }}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      AIRFLOW_HOME: ${{ github.workspace }}/.airflow-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/registry.py install -r requirements-dev.txt
+      - run: python scripts/test_registry.py
+      - run: sphinx-build -W -b html docs docs/_build/html

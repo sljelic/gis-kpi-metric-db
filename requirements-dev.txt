@@ -1,0 +1,4 @@
+-r requirements.txt
+sphinx>=8,<9
+myst-parser>=4
+sphinx-simplepdf>=1.7
